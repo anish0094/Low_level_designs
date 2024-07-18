@@ -1,7 +1,8 @@
 #include<iostream>
 using namespace std;
 
-// Creating a LLD for Tic Tac Toe Game
+// Low level design of Tic-Tac-toe game
+
 class User{
     string name;
     char symbol;
@@ -10,65 +11,67 @@ public:
         this->name = name;
         this->symbol = symbol;
     }
+
     string get_name(){
         return name;
     }
+
     char get_symbol(){
         return symbol;
     }
 };
 
-
 class Grid{
-    char grid[3][3]; 
+    char grid[3][3];
 public:
     Grid(){
-        for(int i=0; i<3; i++){
-            for(int j=0; j<3; j++){
-                grid[i][j] = '-';
+        for(int row = 0; row < 3; row++){
+            for(int col = 0; col < 3; col++){
+                grid[row][col] = '-';
             }
         }
     }
+
     void display(){
-        for(int i=0; i<3; i++){
-            for(int j=0; j<3; j++){
-                cout<<grid[i][j]<<" ";
+        for(int row = 0; row < 3; row++){
+            for(int col = 0; col < 3; col++){
+                cout<<grid[row][col]<<" ";
             }
             cout<<endl;
         }
     }
-    bool is_empty(int x, int y){
-        return grid[x][y] == '-';
+
+    void set_symbol(int row, int col, char symbol){
+        grid[row][col] = symbol;
     }
-    void set(int x, int y, char symbol){
-        grid[x][y] = symbol;
+
+    bool is_empty(int row, int col){
+        return grid[row][col] == '-';
     }
-    char get(int x, int y){
-        return grid[x][y];
-    }
+
     bool is_winner(char symbol){
-        for(int i=0; i<3; i++){
-            if(grid[i][0] == symbol && grid[i][1] == symbol && grid[i][2] == symbol){
+        for(int index = 0; index < 3; index++){
+            if(grid[index][0] == symbol && grid[index][1] == symbol && grid[symbol][2] == symbol){
                 return true;
             }
-            if(grid[0][i] == symbol && grid[1][i] == symbol && grid[2][i] == symbol){
+            if(grid[0][index] == symbol && grid[1][index] == symbol && grid[2][index] == symbol){
                 return true;
             }
         }
         if(grid[0][0] == symbol && grid[1][1] == symbol && grid[2][2] == symbol){
             return true;
         }
-        if(grid[0][2] == symbol && grid[1][1] == symbol && grid[2][0] == symbol){
+        if(grid[2][0] == symbol && grid[1][1] == symbol && grid[0][2] == symbol){
             return true;
         }
         return false;
     }
+
     bool is_full(){
-        for(int i=0; i<3; i++){
-            for(int j=0; j<3; j++){
-                if(grid[i][j] == '-'){
+        for(int row = 0; row < 3; row++){
+            for(int col = 0; col < 3; col++){
+                if(grid[row][col] == '-')
                     return false;
-                }
             }
         }
         return true;
@@ -76,49 +79,56 @@ public:
 };
 
 int main(){
+
     string name1, name2;
-    cout<<"Enter Name of User1: ";
+    cout<<"Enter name of player 1:";
     cin>>name1;
-    cout<<"Enter Name of User2: ";
-    cin >> name2;
-    User user1(name1, 'X');
-    User user2(name2, 'O');
+    cout<<"Enter name of player 2:";
+    cin>>name2;
+    int row, col;
+    User player1(name1, 'X'), player2(name2, 'O');
+    User current_player = player1;
     Grid grid;
-    int x, y;
-    User current_user = user1;
-    while (true) {
-        cout << current_user.get_name() << "'s Turn" << endl;
+    while(true){
+        cout<<current_player.get_name()<<"'s turn"<<endl;
         grid.display();
-        cout << "Enter x and y (or exit): ";
+        cout<<"Enter value of row and column (or exit):";
         string input;
-        cin >> input;
-        if (input == "exit") {
-            cout << "Game exited by user." << endl;
+        cin>>input;
+        if(input=="exit"){
+            cout<<"Game exited by user.";
+            break;
+        }
+        try {
+            row = stoi(input);
+            cin>>col;
+        } 
+        catch (const invalid_argument& e) {
+            cout<<"Invalid input. Please enter numeric values for row and column."<<endl;
+            continue;
+        }
+        if(row - 1 < 0 || row - 1 > 2 || col - 1 < 0 || col - 1 > 2){
+            cout<<"Invalid Move"<<endl;
+            continue;
+        }
+        if(!grid.is_empty(row - 1, col - 1)){
+            cout<<"Invalid Move"<<endl;
+            continue;
+        }
+        grid.set_symbol(row - 1, col - 1, current_player.get_symbol());
+        if(grid.is_winner(current_player.get_symbol())){
+            cout<<current_player.get_name()<<" won the game."<<endl;
+            grid.display();
+            break;
+        }
+        if(grid.is_full()){
+            cout<<"Game Draw"<<endl;
+            grid.display();
             break;
         }
 
-        x = stoi(input);
-        cin >> y;
-        if (x - 1 < 0 || x - 1 > 2 || y - 1 < 0 || y - 1 > 2) {
-            cout << "Invalid Move" << endl;
-            continue;
-        }
-        if (!grid.is_empty(x - 1, y - 1)) {
-            cout << "Invalid Move" << endl;
-            continue;
-        }
-        grid.set(x - 1, y - 1, current_user.get_symbol());
-        if (grid.is_winner(current_user.get_symbol())) {
-            cout << current_user.get_name() << " won the game" << endl;
-            grid.display();
-            break;
-        }
-        if (grid.is_full()) {
-            cout << "Game Over" << endl;
-            grid.display();
-            break;
-        }
-        current_user = current_user.get_name() == user1.get_name() ? user2 : user1;
+        current_player = current_player.get_name() == player1.get_name() ? player2 : player1;
     }
+
     return 0;
 }
